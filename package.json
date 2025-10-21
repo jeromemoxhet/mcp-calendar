@@ -5,6 +5,6 @@
     "@oppie-ai/mcp-google-calendar": "latest"
   },
   "scripts": {
-    "start": "npx @oppie-ai/mcp-google-calendar"
+    "start": "node server.js"
   }
 }
