@@ -9,18 +9,34 @@ app.use(bodyParser.json());
 
 // --- 1. MCP standard discovery endpoint (JSON-RPC compliant)
 app.get("/", (req, res) => {
-  res.json({
-    jsonrpc: "2.0",
-    result: {
-      tools: [
-        { name: "calendar.create_event", type: "function" },
-        { name: "calendar.list_events", type: "function" },
-        { name: "calendar.freebusy", type: "function" }
-      ],
-      version: "1.3.0",
-      vendor: "google-calendar-mcp"
-    }
-  });
+  // Vérifie si Retell demande un flux SSE
+  if (req.headers.accept && req.headers.accept.includes("text/event-stream")) {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    const tools = [
+      { name: "calendar.create_event", type: "function" },
+      { name: "calendar.list_events", type: "function" },
+      { name: "calendar.freebusy", type: "function" }
+    ];
+    // Envoie les données comme un flux event-stream
+    res.write(`data: ${JSON.stringify({ tools })}\n\n`);
+    res.end();
+  } else {
+    // Réponse classique JSON-RPC (compatibilité OpenAI)
+    res.json({
+      jsonrpc: "2.0",
+      result: {
+        tools: [
+          { name: "calendar.create_event", type: "function" },
+          { name: "calendar.list_events", type: "function" },
+          { name: "calendar.freebusy", type: "function" }
+        ],
+        version: "1.3.0",
+        vendor: "google-calendar-mcp"
+      }
+    });
+  }
 });
 
 // --- 2. Health endpoint (Render + monitoring)
